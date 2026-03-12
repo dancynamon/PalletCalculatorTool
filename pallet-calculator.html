@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pallet Calculator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 6px;
+      font-size: 1.6rem;
+      color: #1a1a2e;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 24px;
+      font-size: 0.9rem;
+    }
+
+    /* Navigation */
+    .nav {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .nav a {
+      padding: 8px 20px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+
+    .nav a.active {
+      background: #4a6cf7;
+      color: #fff;
+    }
+
+    .nav a:not(.active) {
+      background: #fff;
+      color: #4a6cf7;
+      border: 1px solid #d0d0d0;
+    }
+
+    .nav a:not(.active):hover {
+      background: #f0f3ff;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 16px;
+      color: #333;
+      border-bottom: 2px solid #e8e8e8;
+      padding-bottom: 8px;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 120px;
+    }
+
+    .field label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .field input, .field select {
+      padding: 8px 10px;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    .field input:focus, .field select:focus {
+      outline: none;
+      border-color: #4a6cf7;
+      box-shadow: 0 0 0 2px rgba(74,108,247,0.15);
+    }
+
+    .field-narrow { flex: 0 0 100px; min-width: 100px; }
+    .field-med { flex: 0 0 160px; min-width: 160px; }
+
+    /* Mode toggle */
+    .mode-toggle {
+      display: flex;
+      gap: 0;
+      margin-bottom: 16px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid #4a6cf7;
+    }
+
+    .mode-toggle button {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.2s, color 0.2s;
+      background: #fff;
+      color: #4a6cf7;
+    }
+
+    .mode-toggle button.active {
+      background: #4a6cf7;
+      color: #fff;
+    }
+
+    .mode-toggle button:not(.active):hover {
+      background: #f0f3ff;
+    }
+
+    /* Results */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .result-card {
+      background: #f8f9fc;
+      border: 1px solid #e4e7ee;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .result-card .label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-bottom: 6px;
+    }
+
+    .result-card .value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .result-card.highlight {
+      border-color: #4a6cf7;
+      background: #f0f3ff;
+    }
+
+    .result-card.highlight .value {
+      color: #4a6cf7;
+    }
+
+    .result-card.class-card {
+      border-color: #2ed573;
+      background: #f0fdf4;
+    }
+
+    .result-card.class-card .value {
+      color: #2ed573;
+    }
+
+    .result-card.insurance-card {
+      border-color: #ff6b35;
+      background: #fff8f5;
+    }
+
+    .result-card.insurance-card .value {
+      color: #ff6b35;
+    }
+
+    .dimensions-display {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1a1a2e;
+      text-align: center;
+      padding: 12px;
+      background: #f8f9fc;
+      border: 1px solid #e4e7ee;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .dimensions-display span {
+      color: #4a6cf7;
+    }
+
+    /* Freight class table */
+    .class-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+
+    .class-table th {
+      background: #f8f9fc;
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      color: #555;
+      border-bottom: 2px solid #e4e7ee;
+    }
+
+    .class-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .class-table tr.active-class {
+      background: #f0f3ff;
+      font-weight: 700;
+    }
+
+    .class-table tr.active-class td {
+      color: #4a6cf7;
+      border-bottom-color: #4a6cf7;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-copy {
+      background: #2ed573;
+      color: #fff;
+      padding: 10px 24px;
+      font-size: 1rem;
+    }
+    .btn-copy:hover { background: #26c466; }
+
+    .btn-reset {
+      background: #747d8c;
+      color: #fff;
+      padding: 10px 24px;
+      font-size: 1rem;
+    }
+    .btn-reset:hover { background: #636b78; }
+
+    .btn-print {
+      background: #1e90ff;
+      color: #fff;
+      padding: 10px 24px;
+      font-size: 1rem;
+    }
+    .btn-print:hover { background: #1a7de0; }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .copied-toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #2ed573;
+      color: #fff;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+      z-index: 100;
+    }
+
+    .copied-toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Helper text */
+    .helper {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .section-note {
+      font-size: 0.82rem;
+      color: #888;
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    /* Hidden sections */
+    .hidden { display: none; }
+
+    /* Print styles */
+    @media print {
+      body { background: #fff; padding: 10px; }
+      .card { box-shadow: none; border: 1px solid #ddd; }
+      .btn, .actions, .no-print, .nav, .mode-toggle { display: none !important; }
+      .result-card { border: 1px solid #ccc; }
+      .result-card.highlight { border-color: #4a6cf7; }
+    }
+
+    @media (max-width: 600px) {
+      .row { flex-direction: column; }
+      .field-narrow, .field-med { flex: 1; min-width: 100%; }
+      .results-grid { grid-template-columns: repeat(2, 1fr); }
+      .mode-toggle button { font-size: 0.78rem; padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="nav no-print">
+      <a href="index.html">Foam Quoting Tool</a>
+      <a href="pallet-calculator.html" class="active">Pallet Calculator</a>
+    </nav>
+
+    <h1>Pallet Calculator</h1>
+    <p class="subtitle">Get pallet size, weight, freight class, and insurance value</p>
+
+    <!-- Mode Toggle -->
+    <div class="card">
+      <div class="mode-toggle">
+        <button id="modeStandard" class="active" onclick="setMode('standard')">Standard Pallet (Boxes)</button>
+        <button id="modeCustom" onclick="setMode('custom')">Custom / Manual Entry</button>
+      </div>
+
+      <!-- Standard Mode Inputs -->
+      <div id="standardInputs">
+        <p class="section-note">Enter the number of boxes to auto-calculate pallet dimensions and freight info.</p>
+        <div class="row">
+          <div class="field">
+            <label>Boxes of 50s</label>
+            <input type="number" id="boxes50" value="0" min="0" step="0.01" oninput="recalc()">
+            <span class="helper">24 lbs each</span>
+          </div>
+          <div class="field">
+            <label>Boxes of 40s</label>
+            <input type="number" id="boxes40" value="0" min="0" step="0.01" oninput="recalc()">
+            <span class="helper">22 lbs each</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom Mode Inputs -->
+      <div id="customInputs" class="hidden">
+        <p class="section-note">Manually enter the pallet weight and dimensions for non-standard loads.</p>
+        <div class="row">
+          <div class="field">
+            <label>Total Weight (lbs)</label>
+            <input type="number" id="customWeight" value="0" min="0" step="1" oninput="recalc()">
+          </div>
+        </div>
+        <div class="row">
+          <div class="field field-med">
+            <label>Length (in)</label>
+            <input type="number" id="customL" value="48" min="0" step="1" oninput="recalc()">
+          </div>
+          <div class="field field-med">
+            <label>Width (in)</label>
+            <input type="number" id="customW" value="40" min="0" step="1" oninput="recalc()">
+          </div>
+          <div class="field field-med">
+            <label>Height (in)</label>
+            <input type="number" id="customH" value="0" min="0" step="1" oninput="recalc()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div class="card">
+      <h2>Pallet Details</h2>
+
+      <div class="dimensions-display" id="dimsDisplay">
+        Dimensions: <span>0" L</span> x <span>0" W</span> x <span>0" H</span>
+      </div>
+
+      <div class="results-grid">
+        <div class="result-card">
+          <div class="label">Total Weight</div>
+          <div class="value" id="resWeight">0 lbs</div>
+        </div>
+        <div class="result-card">
+          <div class="label">Cubic Feet</div>
+          <div class="value" id="resCuFt">0.00</div>
+        </div>
+        <div class="result-card highlight">
+          <div class="label">Density (PCF)</div>
+          <div class="value" id="resPCF">0.000</div>
+        </div>
+        <div class="result-card class-card">
+          <div class="label">Freight Class</div>
+          <div class="value" id="resClass">--</div>
+        </div>
+        <div class="result-card insurance-card" id="insuranceCard">
+          <div class="label">Insurance Value</div>
+          <div class="value" id="resInsurance">$0.00</div>
+        </div>
+        <div class="result-card">
+          <div class="label">Pallet Layers</div>
+          <div class="value" id="resLayers">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Freight Class Reference -->
+    <div class="card">
+      <h2>Freight Class Reference</h2>
+      <p class="section-note">Class is determined by density (PCF). The active class for your pallet is highlighted.</p>
+      <table class="class-table">
+        <thead>
+          <tr>
+            <th>Density (PCF)</th>
+            <th>Freight Class</th>
+          </tr>
+        </thead>
+        <tbody id="classTableBody">
+          <tr data-class="400"><td>Less than 1</td><td>400</td></tr>
+          <tr data-class="300"><td>1 &ndash; 2</td><td>300</td></tr>
+          <tr data-class="250"><td>2 &ndash; 4</td><td>250</td></tr>
+          <tr data-class="175"><td>4 &ndash; 6</td><td>175</td></tr>
+          <tr data-class="125"><td>6 &ndash; 8</td><td>125</td></tr>
+          <tr data-class="100"><td>8 &ndash; 10</td><td>100</td></tr>
+          <tr data-class="92.5"><td>10 &ndash; 12</td><td>92.5</td></tr>
+          <tr data-class="85"><td>12 &ndash; 15</td><td>85</td></tr>
+          <tr data-class="70"><td>15 &ndash; 22.5</td><td>70</td></tr>
+          <tr data-class="65"><td>22.5 &ndash; 30</td><td>65</td></tr>
+          <tr data-class="60"><td>30+</td><td>60</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions no-print">
+      <button class="btn btn-copy" onclick="copyResults()">Copy Results</button>
+      <button class="btn btn-print" onclick="window.print()">Print</button>
+      <button class="btn btn-reset" onclick="resetCalc()">Reset</button>
+    </div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="copied-toast" id="toast">Copied to clipboard!</div>
+
+  <script>
+    // --- Constants ---
+    const PALLET_WEIGHT = 50;       // lbs
+    const BOX_50_WEIGHT = 24;       // lbs per box of 50s
+    const BOX_40_WEIGHT = 22;       // lbs per box of 40s
+    const BOXES_PER_LAYER = 3;      // boxes per pallet layer
+    const LAYER_HEIGHT = 14;        // inches per layer
+    const PALLET_HEIGHT = 6;        // pallet deck height in inches
+    const STANDARD_L = 54;          // standard pallet length
+    const STANDARD_W = 54;          // standard pallet width
+    const BOX_50_INSURANCE = 540;   // insurance value per box of 50s
+    const BOX_40_INSURANCE = 534;   // insurance value per box of 40s
+
+    // Freight class lookup: [maxPCF, class]
+    const FREIGHT_CLASSES = [
+      [1,    400],
+      [2,    300],
+      [4,    250],
+      [6,    175],
+      [8,    125],
+      [10,   100],
+      [12,   92.5],
+      [15,   85],
+      [22.5, 70],
+      [30,   65],
+    ];
+    const FREIGHT_CLASS_DEFAULT = 60; // 30+ PCF
+
+    let currentMode = 'standard';
+
+    // --- Init ---
+    document.addEventListener('DOMContentLoaded', () => {
+      recalc();
+    });
+
+    // --- Mode switching ---
+    function setMode(mode) {
+      currentMode = mode;
+      document.getElementById('modeStandard').classList.toggle('active', mode === 'standard');
+      document.getElementById('modeCustom').classList.toggle('active', mode === 'custom');
+      document.getElementById('standardInputs').classList.toggle('hidden', mode !== 'standard');
+      document.getElementById('customInputs').classList.toggle('hidden', mode !== 'custom');
+      document.getElementById('insuranceCard').classList.toggle('hidden', mode !== 'standard');
+      document.getElementById('resLayers').parentElement.classList.toggle('hidden', mode !== 'standard');
+      recalc();
+    }
+
+    // --- Freight class lookup ---
+    function getFreightClass(pcf) {
+      if (pcf <= 0) return '--';
+      for (const [max, cls] of FREIGHT_CLASSES) {
+        if (pcf < max) return cls;
+      }
+      return FREIGHT_CLASS_DEFAULT;
+    }
+
+    // --- Calculation ---
+    function recalc() {
+      let weight, L, W, H, layers, insurance;
+
+      if (currentMode === 'standard') {
+        const boxes50 = parseFloat(document.getElementById('boxes50').value) || 0;
+        const boxes40 = parseFloat(document.getElementById('boxes40').value) || 0;
+        const totalBoxes = boxes50 + boxes40;
+
+        layers = totalBoxes > 0 ? Math.ceil(totalBoxes / BOXES_PER_LAYER) : 0;
+        H = PALLET_HEIGHT + (layers * LAYER_HEIGHT);
+        L = STANDARD_L;
+        W = STANDARD_W;
+        weight = (boxes50 * BOX_50_WEIGHT) + (boxes40 * BOX_40_WEIGHT) + PALLET_WEIGHT;
+        insurance = (boxes50 * BOX_50_INSURANCE) + (boxes40 * BOX_40_INSURANCE);
+
+        document.getElementById('resLayers').textContent = layers;
+        document.getElementById('resInsurance').textContent = '$' + insurance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      } else {
+        weight = parseFloat(document.getElementById('customWeight').value) || 0;
+        L = parseFloat(document.getElementById('customL').value) || 0;
+        W = parseFloat(document.getElementById('customW').value) || 0;
+        H = parseFloat(document.getElementById('customH').value) || 0;
+      }
+
+      // Calculate cubic feet and PCF
+      const cubicInches = L * W * H;
+      const cubicFeet = cubicInches / 1728;
+      const pcf = cubicFeet > 0 ? weight / cubicFeet : 0;
+      const freightClass = getFreightClass(pcf);
+
+      // Update display
+      document.getElementById('dimsDisplay').innerHTML =
+        `Dimensions: <span>${L}" L</span> x <span>${W}" W</span> x <span>${H}" H</span>`;
+      document.getElementById('resWeight').textContent = weight.toLocaleString('en-US', { maximumFractionDigits: 1 }) + ' lbs';
+      document.getElementById('resCuFt').textContent = cubicFeet.toFixed(2);
+      document.getElementById('resPCF').textContent = pcf.toFixed(3);
+      document.getElementById('resClass').textContent = freightClass;
+
+      // Highlight active class in reference table
+      document.querySelectorAll('#classTableBody tr').forEach(row => {
+        row.classList.toggle('active-class', row.dataset.class === String(freightClass));
+      });
+    }
+
+    // --- Copy results ---
+    function copyResults() {
+      let lines = [];
+
+      if (currentMode === 'standard') {
+        const boxes50 = document.getElementById('boxes50').value || '0';
+        const boxes40 = document.getElementById('boxes40').value || '0';
+        lines.push(`PALLET INFO`);
+        lines.push(`Boxes of 50s: ${boxes50}`);
+        lines.push(`Boxes of 40s: ${boxes40}`);
+      } else {
+        lines.push(`PALLET INFO (Custom)`);
+      }
+
+      lines.push(``);
+      lines.push(`Weight: ${document.getElementById('resWeight').textContent}`);
+      lines.push(`Dimensions: ${document.getElementById('dimsDisplay').textContent.replace(/.*Dimensions:\s*/, '').replace(/<[^>]*>/g, '')}`);
+      lines.push(`Cubic Feet: ${document.getElementById('resCuFt').textContent}`);
+      lines.push(`Density (PCF): ${document.getElementById('resPCF').textContent}`);
+      lines.push(`Freight Class: ${document.getElementById('resClass').textContent}`);
+
+      if (currentMode === 'standard') {
+        lines.push(`Insurance Value: ${document.getElementById('resInsurance').textContent}`);
+      }
+
+      const text = lines.join('\n');
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard!');
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Copied to clipboard!');
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // --- Reset ---
+    function resetCalc() {
+      document.getElementById('boxes50').value = '0';
+      document.getElementById('boxes40').value = '0';
+      document.getElementById('customWeight').value = '0';
+      document.getElementById('customL').value = '48';
+      document.getElementById('customW').value = '40';
+      document.getElementById('customH').value = '0';
+      setMode('standard');
+    }
+  </script>
+</body>
+</html>
